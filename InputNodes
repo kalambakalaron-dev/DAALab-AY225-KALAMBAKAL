@@ -1,0 +1,31 @@
+graph = {
+    1: {2: (10, 15, 1.2), 6: (10, 15, 1.2)},
+    2: {1: (10, 15, 1.2), 3: (12, 25, 1.5), 5: (12, 25, 1.5), 6: (10, 15, 1.2)},
+    3: {2: (12, 25, 1.5), 4: (12, 25, 1.5), 5: (14, 25, 1.5)},
+    4: {}, 
+    5: {2: (12, 25, 1.5), 4: (14, 25, 1.5), 6: (10, 25, 1.5)},
+    6: {1: (10, 15, 1.2), 2: (10, 15, 1.2), 5: (10, 25, 1.5)}
+}
+metric_map = {'D': 0, 'T': 1, 'F': 2}
+
+while True:
+    print("\n--- Network Explorer ---")
+    node_input = input("Enter Node ID (1-6) or 'q' to quit: ")
+    if node_input.lower() == 'q': break
+    try:
+        node = int(node_input)
+        metric_key = input("Which metric (D, T, F)? ").upper()
+        if node in graph and metric_key in metric_map:
+            idx = metric_map[metric_key]
+            neighbors = graph[node]
+            print(f"\n--- Paths from Node {node} ({metric_key}) ---")
+            for neighbor, data in neighbors.items():
+                print(f"Path: {node} -> {neighbor} = {data[idx]}")
+            vals = [data[idx] for data in neighbors.values()]
+            if vals:
+                print(f"\nSummary: Shortest={min(vals)}, Longest={max(vals)}")
+        else:
+            print("Invalid input or sink node.")
+            
+    except ValueError:
+        print("Please enter a valid number.")
