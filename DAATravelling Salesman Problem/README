@@ -12,7 +12,7 @@ Algorithm:
 The program uses Dijkstra's Algorithm to find the shortest path. The algorithm works best for determining the least expensive route between nodes in a weighted graph. The system performs dynamic calculations because weight values change according to user selection of distance or time or fuel.
 
 User Interface:
-The developers created the interface through the use of Dash and Plotly. The system creates a web dashboard which allows users to select their starting and ending locations from dropdown fields. The map displays the selected route in real time while showing complete trip details.
+The interface was created through the use of Dash and Plotly. The system creates a web dashboard which allows users to select their starting and ending locations from dropdown fields. The map displays the selected route in real time while showing complete trip details.
 
 Technical Requirements
 Language: Python 3.13
