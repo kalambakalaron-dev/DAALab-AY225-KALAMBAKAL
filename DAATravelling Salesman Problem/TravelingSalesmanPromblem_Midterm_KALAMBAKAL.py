@@ -3,6 +3,7 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html, Input, Output
 import networkx as nx
 import plotly.graph_objects as go
+
 route_data = [
     {"from": "IMUS", "to": "BACOOR", "dist": 10, "time": 15, "fuel": 1.2},
     {"from": "BACOOR", "to": "DASMA", "dist": 12, "time": 25, "fuel": 1.5},
@@ -19,18 +20,21 @@ route_data = [
     {"from": "SILANG", "to": "KAWIT", "dist": 14, "time": 25, "fuel": 1.2},
     {"from": "IMUS", "to": "NOVELETA", "dist": 10, "time": 15, "fuel": 1.2}
 ]
+
 G = nx.DiGraph()
 for r in route_data:
     G.add_edge(r["from"], r["to"], distance=r["dist"], time=r["time"], fuel=r["fuel"])
+
 pos = nx.spring_layout(G, seed=42)
 node_list = sorted(list(G.nodes()))
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
+
 app.layout = dbc.Container(fluid=True, style={'padding': '20px'}, children=[
     dbc.Row([
-        dbc.Col(html.H1("📍 Cavite Route Optimizer", className="text-primary mb-4"), width=12)
+        dbc.Col(html.H1("Cavite Route Optimizer", className="text-primary mb-4"), width=12)
     ]),
     dbc.Row([
-        # LEFT COLUMN: INPUTS & STATS
         dbc.Col(width=4, children=[
             dbc.Card(dbc.CardBody([
                 html.H4("Route Settings", className="card-title"),
@@ -47,7 +51,6 @@ app.layout = dbc.Container(fluid=True, style={'padding': '20px'}, children=[
                 html.Div(id='stats-output')
             ]), style={'borderRadius': '15px', 'border': '1px solid #00d4ff'})
         ]), 
-        # RIGHT COLUMN: THE MAP
         dbc.Col(width=8, children=[
             dbc.Card(dbc.CardBody([
                 dcc.Graph(id='network-graph', style={'height': '75vh'})
@@ -55,6 +58,7 @@ app.layout = dbc.Container(fluid=True, style={'padding': '20px'}, children=[
         ])
     ])
 ])
+
 @app.callback(
     [Output('network-graph', 'figure'), Output('stats-output', 'children')],
     [Input('start-node', 'value'), Input('end-node', 'value'), Input('criteria', 'value')]
@@ -80,18 +84,47 @@ def update_graph(start, end, criteria):
         ])
     except:
         stats_content = html.P("No valid path found.", className="text-danger")
+
     edge_traces = []
-    for edge in G.edges():
-        x0, y0 = pos[edge[0]]; x1, y1 = pos[edge[1]]
+    # Lists to hold the positions and text for edge labels
+    edge_label_x = []
+    edge_label_y = []
+    edge_label_text = []
+
+    for u, v, data in G.edges(data=True):
+        x0, y0 = pos[u]
+        x1, y1 = pos[v]
+        
         is_in_path = False
         if path:
             for i in range(len(path)-1):
-                if edge == (path[i], path[i+1]): is_in_path = True
+                if (u, v) == (path[i], path[i+1]): 
+                    is_in_path = True
+        
+        # Draw the line
         edge_traces.append(go.Scatter(
             x=[x0, x1, None], y=[y0, y1, None],
             line=dict(width=4 if is_in_path else 1, color='#00d4ff' if is_in_path else '#444'),
             hoverinfo='none', mode='lines'
         ))
+
+        # Calculate Midpoint for the label
+        edge_label_x.append((x0 + x1) / 2)
+        edge_label_y.append((y0 + y1) / 2)
+        # Construct the label string: D (Dist), T (Time), F (Fuel)
+        label = f"D:{data['distance']} T:{data['time']} F:{data['fuel']}"
+        edge_label_text.append(label)
+
+    # Create a trace for the edge labels
+    edge_label_trace = go.Scatter(
+        x=edge_label_x, y=edge_label_y,
+        text=edge_label_text,
+        mode='text',
+        textposition='middle center',
+        textfont=dict(size=9, color='#00d4ff'),
+        hoverinfo='none'
+    )
+
     node_trace = go.Scatter(
         x=[pos[n][0] for n in G.nodes()], y=[pos[n][1] for n in G.nodes()],
         mode='markers+text', text=[n for n in G.nodes()],
@@ -99,7 +132,8 @@ def update_graph(start, end, criteria):
         marker=dict(size=18, color='#00d4ff', line=dict(color='white', width=1)),
         hoverinfo='text'
     )
-    fig = go.Figure(data=edge_traces + [node_trace],
+
+    fig = go.Figure(data=edge_traces + [edge_label_trace, node_trace],
                     layout=go.Layout(
                         paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
                         showlegend=False, margin=dict(b=0, l=0, r=0, t=0),
@@ -107,5 +141,6 @@ def update_graph(start, end, criteria):
                         yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)
                     ))
     return fig, stats_content
+
 if __name__ == '__main__':
     app.run(debug=True)
