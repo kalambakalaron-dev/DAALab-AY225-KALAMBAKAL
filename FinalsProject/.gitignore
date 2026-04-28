@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.env
+venv/
+.venv/
+models/
+dataset/
+plots/
+static/uploads/
+static/prediction_stats.json
+.vscode/
+.DS_Store
+Thumbs.db
