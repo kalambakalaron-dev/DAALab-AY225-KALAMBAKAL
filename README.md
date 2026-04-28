@@ -56,5 +56,5 @@ TensorFlow does not support Python 3.13. PyTorch does.
 ## Team
 | Role | Name |
 |------|------|
-| Repo owner | @YOUR_USERNAME |
-| Collaborator | @TEAMMATE_USERNAME |
+| Repo owner | @Josh Aron Kalambakal |
+| Collaborator | @Jazen Kierr Malano|
